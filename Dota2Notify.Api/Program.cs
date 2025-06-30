@@ -1,6 +1,11 @@
+using Dota2Notify.Api.notifications;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<INotifyService, TelegramNotifyService>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -34,6 +39,21 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast")
+.WithOpenApi();
+
+app.MapPost("/notify", async (INotifyService notifyService, string message, string chatId) =>
+{
+    try
+    {
+        await notifyService.SendNotificationAsync(message, chatId);
+        return Results.Ok(new { success = true, message = "Notification sent successfully" });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { success = false, error = ex.Message });
+    }
+})
+.WithName("SendNotification")
 .WithOpenApi();
 
 app.Run();
