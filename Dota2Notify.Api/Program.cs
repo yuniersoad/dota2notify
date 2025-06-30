@@ -41,11 +41,11 @@ app.MapGet("/weatherforecast", () =>
 .WithName("GetWeatherForecast")
 .WithOpenApi();
 
-app.MapPost("/notify", async (INotifyService notifyService, string message, string chatId) =>
+app.MapPost("/notify", async (INotifyService notifyService, string message) =>
 {
     try
     {
-        await notifyService.SendNotificationAsync(message, chatId);
+        await notifyService.SendNotificationAsync(message);
         return Results.Ok(new { success = true, message = "Notification sent successfully" });
     }
     catch (Exception ex)

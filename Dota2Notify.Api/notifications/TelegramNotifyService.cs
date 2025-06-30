@@ -7,20 +7,22 @@ public class TelegramNotifyService : INotifyService
 {
     private readonly HttpClient _httpClient;
     private readonly string _botToken;
+    private readonly string _chatId;
 
     public TelegramNotifyService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
         _botToken = configuration["Telegram:BotToken"] ?? throw new ArgumentException("Telegram:BotToken is required");
+        _chatId = configuration["Telegram:ChatId"] ?? throw new ArgumentException("Telegram:ChatId is required");
     }
 
-    public async Task SendNotificationAsync(string message, string chatId)
+    public async Task SendNotificationAsync(string message)
     {
         var url = $"https://api.telegram.org/bot{_botToken}/sendMessage";
         
         var payload = new
         {
-            chat_id = chatId,
+            chat_id = _chatId,
             text = message
         };
 
