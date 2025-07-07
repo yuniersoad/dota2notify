@@ -1,10 +1,12 @@
 using Dota2Notify.Api.notifications;
+using Dota2Notify.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<INotifyService, TelegramNotifyService>();
+builder.Services.AddScoped<IDotaService, OpenDotaService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -54,6 +56,37 @@ app.MapPost("/notify", async (INotifyService notifyService, string message) =>
     }
 })
 .WithName("SendNotification")
+.WithOpenApi();
+
+app.MapGet("/dota/matches/{playerId:long}", async (long playerId, int? limit, IDotaService dotaService) =>
+{
+    try
+    {
+        var matches = await dotaService.GetPlayerRecentMatchesAsync(playerId, limit ?? 10);
+        return Results.Ok(matches);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { success = false, error = ex.Message });
+    }
+})
+.WithName("GetPlayerMatches")
+.WithOpenApi();
+
+app.MapGet("/dota/matches", async (IConfiguration config, IDotaService dotaService) =>
+{
+    try
+    {
+        var defaultPlayerId = config.GetValue<long>("OpenDota:DefaultPlayerId");
+        var matches = await dotaService.GetPlayerRecentMatchesAsync(defaultPlayerId);
+        return Results.Ok(matches);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { success = false, error = ex.Message });
+    }
+})
+.WithName("GetDefaultPlayerMatches")
 .WithOpenApi();
 
 app.Run();
