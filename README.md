@@ -18,13 +18,23 @@ A .NET API to notify users about recent Dota 2 matches played by followed player
 ## Getting Started
 
 1. Clone the repository
-2. Update `appsettings.json` with your configuration values:
-   - Telegram bot token and chat ID
-   - Azure Cosmos DB connection details
+2. Set up your environment:
+   - Option 1: Create a `.env` file based on `.env.example`
+   - Option 2: Update `appsettings.json` with your configuration values
 
 ## Local Development
 
-When running locally, the application will use the Cosmos DB Emulator by default. Make sure you have it installed and running before starting the application.
+When running locally, the application will:
+1. Load environment variables from the `.env` file in the root directory
+2. Use the Cosmos DB Emulator by default (make sure you have it installed and running)
+
+### Using Environment Variables
+
+The application supports environment variables to override configuration. For local development:
+
+1. Copy `.env.example` to `.env`: `cp .env.example .env`
+2. Edit `.env` with your actual values
+3. The application will automatically load these values when starting
 
 ## API Endpoints
 

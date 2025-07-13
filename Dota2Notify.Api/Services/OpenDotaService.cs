@@ -7,12 +7,13 @@ public class OpenDotaService : IDotaService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<OpenDotaService> _logger;
-    private readonly string _baseUrl = "https://api.opendota.com/api";
+    private readonly string _baseUrl;
     
-    public OpenDotaService(HttpClient httpClient, ILogger<OpenDotaService> logger)
+    public OpenDotaService(HttpClient httpClient, ILogger<OpenDotaService> logger, IConfiguration configuration)
     {
         _httpClient = httpClient;
         _logger = logger;
+        _baseUrl = configuration.GetValueWithEnvOverride("OpenDota:BaseUrl") ?? "https://api.opendota.com/api";
     }
     
     public async Task<IEnumerable<DotaMatch>> GetPlayerRecentMatchesAsync(long playerId, int limit = 10)

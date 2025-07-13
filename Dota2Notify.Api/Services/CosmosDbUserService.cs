@@ -16,8 +16,8 @@ public class CosmosDbUserService : IUserService
         _cosmosClient = cosmosClient;
         _logger = logger;
         
-        var databaseName = configuration["CosmosDb:DatabaseName"] ?? throw new ArgumentException("CosmosDb:DatabaseName is required");
-        var containerName = configuration["CosmosDb:ContainerName"] ?? throw new ArgumentException("CosmosDb:ContainerName is required");
+        var databaseName = configuration.GetValueWithEnvOverride("CosmosDb:DatabaseName") ?? throw new ArgumentException("CosmosDb:DatabaseName is required");
+        var containerName = configuration.GetValueWithEnvOverride("CosmosDb:ContainerName") ?? throw new ArgumentException("CosmosDb:ContainerName is required");
         
         _container = _cosmosClient.GetContainer(databaseName, containerName);
     }

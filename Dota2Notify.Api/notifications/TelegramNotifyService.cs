@@ -12,8 +12,8 @@ public class TelegramNotifyService : INotifyService
     public TelegramNotifyService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
-        _botToken = configuration["Telegram:BotToken"] ?? throw new ArgumentException("Telegram:BotToken is required");
-        _chatId = configuration["Telegram:ChatId"] ?? throw new ArgumentException("Telegram:ChatId is required");
+        _botToken = configuration.GetValueWithEnvOverride("Telegram:BotToken") ?? throw new ArgumentException("Telegram:BotToken is required");
+        _chatId = configuration.GetValueWithEnvOverride("Telegram:ChatId") ?? throw new ArgumentException("Telegram:ChatId is required");
     }
 
     public async Task SendNotificationAsync(string message)

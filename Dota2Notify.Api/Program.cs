@@ -3,6 +3,15 @@ using Dota2Notify.Api.notifications;
 using Dota2Notify.Api.Models;
 using Dota2Notify.Api.Services;
 using Microsoft.Azure.Cosmos;
+using DotNetEnv;
+using System.IO;
+
+// Load environment variables from .env file in development
+if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+    Env.Load(Path.Combine(Directory.GetCurrentDirectory(), "..", ".env"));
+    Env.TraversePath().Load(); // This will also look for .env files in parent directories
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,8 +21,8 @@ builder.Services.AddScoped<INotifyService, TelegramNotifyService>();
 builder.Services.AddScoped<IDotaService, OpenDotaService>();
 
 // Add Cosmos DB services
-var cosmosDbEndpoint = builder.Configuration["CosmosDb:EndpointUri"];
-var cosmosDbKey = builder.Configuration["CosmosDb:PrimaryKey"];
+var cosmosDbEndpoint = builder.Configuration.GetValueWithEnvOverride("CosmosDb:EndpointUri");
+var cosmosDbKey = builder.Configuration.GetValueWithEnvOverride("CosmosDb:PrimaryKey");
 builder.Services.AddSingleton(s => new CosmosClient(cosmosDbEndpoint, cosmosDbKey));
 builder.Services.AddScoped<IUserService, CosmosDbUserService>();
 
