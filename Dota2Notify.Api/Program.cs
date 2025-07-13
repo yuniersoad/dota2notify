@@ -1,5 +1,8 @@
+using Dota2Notify.Api;
 using Dota2Notify.Api.notifications;
+using Dota2Notify.Api.Models;
 using Dota2Notify.Api.Services;
+using Microsoft.Azure.Cosmos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<INotifyService, TelegramNotifyService>();
 builder.Services.AddScoped<IDotaService, OpenDotaService>();
+
+// Add Cosmos DB services
+var cosmosDbEndpoint = builder.Configuration["CosmosDb:EndpointUri"];
+var cosmosDbKey = builder.Configuration["CosmosDb:PrimaryKey"];
+builder.Services.AddSingleton(s => new CosmosClient(cosmosDbEndpoint, cosmosDbKey));
+builder.Services.AddScoped<IUserService, CosmosDbUserService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -28,20 +37,6 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
 
 app.MapPost("/notify", async (INotifyService notifyService, string message) =>
 {
@@ -87,6 +82,41 @@ app.MapGet("/dota/matches", async (IConfiguration config, IDotaService dotaServi
     }
 })
 .WithName("GetDefaultPlayerMatches")
+.WithOpenApi();
+
+// User endpoints
+app.MapGet("/users", async (IUserService userService) =>
+{
+    try
+    {
+        var users = await userService.GetAllUsersAsync();
+        return Results.Ok(users);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { success = false, error = ex.Message });
+    }
+})
+.WithName("GetAllUsers")
+.WithOpenApi();
+
+app.MapGet("/users/{userId}", async (long userId, IUserService userService) =>
+{
+    try
+    {
+        var user = await userService.GetUserAsync(userId);
+        if (user == null)
+        {
+            return Results.NotFound(new { success = false, error = $"User {userId} not found" });
+        }
+        return Results.Ok(user);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { success = false, error = ex.Message });
+    }
+})
+.WithName("GetUser")
 .WithOpenApi();
 
 app.Run();
