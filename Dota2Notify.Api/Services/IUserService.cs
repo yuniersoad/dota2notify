@@ -39,5 +39,5 @@ public interface IUserService
     /// <param name="followedPlayerId">The ID of the followed player</param>
     /// <param name="lastMatchId">The new last match ID</param>
     /// <returns>True if updated successfully, false otherwise</returns>
-    Task<bool> UpdateLastMatchIdAsync(long userId, long followedPlayerId, string lastMatchId);
+    Task<bool> UpdateLastMatchIdAsync(long userId, long followedPlayerId, long lastMatchId);
 }

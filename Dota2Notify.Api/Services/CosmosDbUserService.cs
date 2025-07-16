@@ -134,7 +134,7 @@ public class CosmosDbUserService : IUserService
         }
     }
     
-    public async Task<bool> UpdateLastMatchIdAsync(long userId, long followedPlayerId, string lastMatchId)
+    public async Task<bool> UpdateLastMatchIdAsync(long userId, long followedPlayerId, long lastMatchId)
     {
         try
         {
@@ -158,7 +158,7 @@ public class CosmosDbUserService : IUserService
             
             await _container.ReplaceItemAsync(
                 user,
-                user.Id,
+                user.UserId.ToString(),
                 new PartitionKey(user.UserId)
             );
             

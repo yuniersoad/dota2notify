@@ -1,24 +1,24 @@
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace Dota2Notify.Api.Models;
 
 public class User
 {
-    [JsonPropertyName("id")]
+    [JsonProperty("id")]
     public string Id { get; set; } = string.Empty;
-    
-    [JsonPropertyName("userId")]
+
+    [JsonProperty("userId")]
     public long UserId { get; set; }
-    
-    [JsonPropertyName("name")]
+
+    [JsonProperty("name")]
     public string Name { get; set; } = string.Empty;
-    
-    [JsonPropertyName("telegramChatId")]
+
+    [JsonProperty("telegramChatId")]
     public string TelegramChatId { get; set; } = string.Empty;
-    
-    [JsonPropertyName("following")]
-    public List<FollowedPlayer> Following { get; set; } = new List<FollowedPlayer>();
-    
-    [JsonPropertyName("type")]
+
+    [JsonProperty("following")]
+    public List<FollowedPlayer> Following { get; set; } = new();
+
+    [JsonProperty("type")]
     public string Type { get; set; } = "user";
 }

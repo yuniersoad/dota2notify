@@ -8,6 +8,8 @@ A .NET API to notify users about recent Dota 2 matches played by followed player
 - Send notifications through Telegram
 - Store users and their followed players in Azure Cosmos DB
 - Track the last match ID for each followed player
+- Automatically check for new matches at configurable intervals
+- Send notifications when followed players play new matches
 
 ## Requirements
 
@@ -49,6 +51,9 @@ The application supports environment variables to override configuration. For lo
 ### Notification Endpoint
 - `POST /notify` - Send a Telegram notification
 
+### Automatic Match Checking
+The application includes a background service that periodically checks for new matches based on the configured interval in `MatchCheck:IntervalMinutes`.
+
 ## Configuration
 
 The application uses the following configuration sections:
@@ -68,6 +73,11 @@ The application uses the following configuration sections:
     "PrimaryKey": "your-cosmos-db-primary-key",
     "DatabaseName": "dota2notify",
     "ContainerName": "users"
+  },
+  "MatchCheck": {
+    "IntervalMinutes": 5,
+    "Enabled": true
+  }
   }
 }
 ```

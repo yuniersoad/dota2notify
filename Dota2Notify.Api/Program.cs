@@ -7,11 +7,11 @@ using DotNetEnv;
 using System.IO;
 
 // Load environment variables from .env file in development
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-{
+// if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+// {
     Env.Load(Path.Combine(Directory.GetCurrentDirectory(), "..", ".env"));
     Env.TraversePath().Load(); // This will also look for .env files in parent directories
-}
+//}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +25,9 @@ var cosmosDbEndpoint = builder.Configuration.GetValueWithEnvOverride("CosmosDb:E
 var cosmosDbKey = builder.Configuration.GetValueWithEnvOverride("CosmosDb:PrimaryKey");
 builder.Services.AddSingleton(s => new CosmosClient(cosmosDbEndpoint, cosmosDbKey));
 builder.Services.AddScoped<IUserService, CosmosDbUserService>();
+
+// Add match checking background service
+builder.Services.AddHostedService<MatchCheckBackgroundService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -40,11 +43,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
 
 app.MapPost("/notify", async (INotifyService notifyService, string message) =>
@@ -128,9 +126,6 @@ app.MapGet("/users/{userId}", async (long userId, IUserService userService) =>
 .WithName("GetUser")
 .WithOpenApi();
 
-app.Run();
+// Match checking is now handled by the background service
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+app.Run();
