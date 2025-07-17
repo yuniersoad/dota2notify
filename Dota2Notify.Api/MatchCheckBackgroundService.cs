@@ -95,8 +95,10 @@ public class MatchCheckBackgroundService : BackgroundService
            var newestMatch = recentMatches.First();
             
             // Create notification message
-            var outcome = newestMatch.PlayerWon ? "won" : "lost";
-            var matchDuration = $"{newestMatch.MatchDuration.Minutes}m {newestMatch.MatchDuration.Seconds}s";
+            var outcome = newestMatch.PlayerWon ? "WON" : "LOST";
+            var matchDuration = newestMatch.MatchDuration.TotalHours >= 1
+                ? $"{newestMatch.MatchDuration.Hours}h {newestMatch.MatchDuration.Minutes}m {newestMatch.MatchDuration.Seconds}s"
+                : $"{newestMatch.MatchDuration.Minutes}m {newestMatch.MatchDuration.Seconds}s";
             var message = $"{followedPlayer.Name} {outcome} a match as {newestMatch.HeroName} " +
                           $"with KDA {newestMatch.Kills}/{newestMatch.Deaths}/{newestMatch.Assists}. " +
                           $"Match duration: {matchDuration}. " +
