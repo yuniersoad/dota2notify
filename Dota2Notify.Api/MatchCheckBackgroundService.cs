@@ -99,10 +99,11 @@ public class MatchCheckBackgroundService : BackgroundService
             var matchDuration = newestMatch.MatchDuration.TotalHours >= 1
                 ? $"{newestMatch.MatchDuration.Hours}h {newestMatch.MatchDuration.Minutes}m {newestMatch.MatchDuration.Seconds}s"
                 : $"{newestMatch.MatchDuration.Minutes}m {newestMatch.MatchDuration.Seconds}s";
+            var dotabuffLink = $"https://www.dotabuff.com/matches/{newestMatch.MatchId}";
             var message = $"{followedPlayer.Name} {outcome} a match as {newestMatch.HeroName} " +
                           $"with KDA {newestMatch.Kills}/{newestMatch.Deaths}/{newestMatch.Assists}. " +
                           $"Match duration: {matchDuration}. " +
-                          $"Match ID: {newestMatch.MatchId}";
+                          $"Match details: {dotabuffLink}";
             
             _logger.LogInformation("Sending notification to user {userName} (ID: {userId}): {message}", 
                 user.Name, user.UserId, message);
