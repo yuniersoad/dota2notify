@@ -45,11 +45,17 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 
-app.MapPost("/notify", async (INotifyService notifyService, string message) =>
+app.MapPost("/notify", async (long userId, string message, INotifyService notifyService, IUserService userService) =>
 {
     try
     {
-        await notifyService.SendNotificationAsync(message);
+        var user = await userService.GetUserAsync(userId);
+        if (user == null)
+        {
+            return Results.NotFound(new { success = false, error = $"User {userId} not found" });
+        }
+        
+        await notifyService.SendNotificationAsync(message, user.TelegramChatId);
         return Results.Ok(new { success = true, message = "Notification sent successfully" });
     }
     catch (Exception ex)

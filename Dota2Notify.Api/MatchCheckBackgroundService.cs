@@ -109,7 +109,7 @@ public class MatchCheckBackgroundService : BackgroundService
                 user.Name, user.UserId, message);
             
             // Send notification
-            await notifyService.SendNotificationAsync(message);
+            await notifyService.SendNotificationAsync(message, user.TelegramChatId);
             
             // Update last seen match ID
             await userService.UpdateLastMatchIdAsync(user.UserId, followedPlayer.UserId, newestMatch.MatchId);

@@ -62,7 +62,6 @@ The application uses the following configuration sections:
 {
   "Telegram": {
     "BotToken": "your-telegram-bot-token",
-    "ChatId": "your-telegram-chat-id"
   },
   "OpenDota": {
     "BaseUrl": "https://api.opendota.com/api",
@@ -78,6 +77,6 @@ The application uses the following configuration sections:
     "IntervalMinutes": 5,
     "Enabled": true
   }
-  }
 }
+
 ```
