@@ -1,6 +1,7 @@
 using Dota2Notify.Api.Models;
 using Dota2Notify.Api.notifications;
 using Dota2Notify.Api.Services;
+using System.Diagnostics.Metrics;
 
 namespace Dota2Notify.Api;
 
@@ -10,11 +11,20 @@ public class MatchCheckBackgroundService : BackgroundService
     private readonly ILogger<MatchCheckBackgroundService> _logger;
     private readonly TimeSpan _checkInterval;
     private readonly bool _isEnabled;
+    private readonly Meter _meter;
+    private readonly Counter<int> _executionCounter;
     
     public MatchCheckBackgroundService(IServiceProvider serviceProvider, ILogger<MatchCheckBackgroundService> logger, IConfiguration configuration)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        
+        // Initialize OpenTelemetry meter and counter
+        _meter = new Meter("Dota2Notify.Api", "1.0.0");
+        _executionCounter = _meter.CreateCounter<int>(
+            "match_check_executions", 
+            "count", 
+            "Number of match check executions");
         
         // Get check interval from configuration (default to 5 minutes)
         var intervalMinutes = configuration.GetValueWithEnvOverride("MatchCheck:IntervalMinutes");
@@ -39,16 +49,24 @@ public class MatchCheckBackgroundService : BackgroundService
         {
             _logger.LogInformation("Running match check at {time}", DateTimeOffset.UtcNow);
             
+            var executionSuccess = false;
             try
             {
                 await CheckNewMatchesAsync(stoppingToken);
+                executionSuccess = true;
+                _logger.LogInformation("Match check completed successfully");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while checking for new matches");
             }
+            finally
+            {
+                // Record the execution metric with success/failure dimension
+                _executionCounter.Add(1, new KeyValuePair<string, object?>("success", executionSuccess.ToString()));
+            }
             
-            _logger.LogInformation("Match check completed. Next check in {minutes} minutes", _checkInterval.TotalMinutes);
+            _logger.LogInformation("Next check in {minutes} minutes", _checkInterval.TotalMinutes);
             await Task.Delay(_checkInterval, stoppingToken);
         }
     }
@@ -117,5 +135,11 @@ public class MatchCheckBackgroundService : BackgroundService
             _logger.LogInformation("Updated last match ID for player {playerId} to {matchId}", 
                 followedPlayer.UserId, newestMatch.MatchId);
         }
+    }
+    
+    public override void Dispose()
+    {
+        _meter?.Dispose();
+        base.Dispose();
     }
 }

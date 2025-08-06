@@ -5,6 +5,9 @@ using Dota2Notify.Api.Services;
 using Microsoft.Azure.Cosmos;
 using DotNetEnv;
 using System.IO;
+using OpenTelemetry.Metrics;
+using System.Diagnostics.Metrics;
+using Azure.Monitor.OpenTelemetry.Exporter;
 
 // Load environment variables from .env file in development
 // if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
@@ -14,6 +17,32 @@ using System.IO;
 //}
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add OpenTelemetry metrics
+var azureMonitorConnectionString = builder.Configuration.GetValueWithEnvOverride("AzureMonitor:ConnectionString");
+
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics =>
+    {
+        metrics.AddMeter("Dota2Notify.Api");
+        
+        // Add console exporter for development
+        metrics.AddConsoleExporter();
+        
+        // Add Azure Monitor exporter if connection string is provided
+        if (!string.IsNullOrEmpty(azureMonitorConnectionString))
+        {
+            metrics.AddAzureMonitorMetricExporter(options =>
+            {
+                options.ConnectionString = azureMonitorConnectionString;
+            });
+            Console.WriteLine("Azure Monitor metrics exporter configured");
+        }
+        else
+        {
+            Console.WriteLine("Azure Monitor connection string not found. Only console exporter will be used.");
+        }
+    });
 
 // Add services to the container.
 builder.Services.AddHttpClient();
