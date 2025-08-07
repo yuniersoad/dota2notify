@@ -73,75 +73,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-
-app.MapPost("/notify", async (long userId, string message, INotifyService notifyService, IUserService userService) =>
-{
-    try
-    {
-        var user = await userService.GetUserAsync(userId);
-        if (user == null)
-        {
-            return Results.NotFound(new { success = false, error = $"User {userId} not found" });
-        }
-        
-        await notifyService.SendNotificationAsync(message, user.TelegramChatId);
-        return Results.Ok(new { success = true, message = "Notification sent successfully" });
-    }
-    catch (Exception ex)
-    {
-        return Results.BadRequest(new { success = false, error = ex.Message });
-    }
-})
-.WithName("SendNotification")
-.WithOpenApi();
-
-app.MapGet("/dota/matches/{playerId:long}", async (long playerId, int? limit, IDotaService dotaService) =>
-{
-    try
-    {
-        var matches = await dotaService.GetPlayerRecentMatchesAsync(playerId, limit ?? 10);
-        return Results.Ok(matches);
-    }
-    catch (Exception ex)
-    {
-        return Results.BadRequest(new { success = false, error = ex.Message });
-    }
-})
-.WithName("GetPlayerMatches")
-.WithOpenApi();
-
-app.MapGet("/dota/matches", async (IConfiguration config, IDotaService dotaService) =>
-{
-    try
-    {
-        var defaultPlayerId = config.GetValue<long>("OpenDota:DefaultPlayerId");
-        var matches = await dotaService.GetPlayerRecentMatchesAsync(defaultPlayerId);
-        return Results.Ok(matches);
-    }
-    catch (Exception ex)
-    {
-        return Results.BadRequest(new { success = false, error = ex.Message });
-    }
-})
-.WithName("GetDefaultPlayerMatches")
-.WithOpenApi();
-
-// User endpoints
-app.MapGet("/users", async (IUserService userService) =>
-{
-    try
-    {
-        var users = await userService.GetAllUsersAsync();
-        return Results.Ok(users);
-    }
-    catch (Exception ex)
-    {
-        return Results.BadRequest(new { success = false, error = ex.Message });
-    }
-})
-.WithName("GetAllUsers")
-.WithOpenApi();
-
 app.MapGet("/users/{userId}", async (long userId, IUserService userService) =>
 {
     try
@@ -160,7 +91,5 @@ app.MapGet("/users/{userId}", async (long userId, IUserService userService) =>
 })
 .WithName("GetUser")
 .WithOpenApi();
-
-// Match checking is now handled by the background service
 
 app.Run();
