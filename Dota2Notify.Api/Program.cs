@@ -9,12 +9,13 @@ using OpenTelemetry.Metrics;
 using System.Diagnostics.Metrics;
 using Azure.Monitor.OpenTelemetry.Exporter;
 
+var IsDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
 // Load environment variables from .env file in development
-// if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-// {
+if (IsDevelopment)
+{
     Env.Load(Path.Combine(Directory.GetCurrentDirectory(), "..", ".env"));
     Env.TraversePath().Load(); // This will also look for .env files in parent directories
-//}
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,9 +27,18 @@ builder.Services.AddOpenTelemetry()
     {
         metrics.AddMeter("Dota2Notify.Api");
         
-        // Add console exporter for development
-        metrics.AddConsoleExporter();
+        // Add ASP.NET Core instrumentation for HTTP request metrics
+        metrics.AddAspNetCoreInstrumentation();
         
+        // Add HTTP client instrumentation for outgoing HTTP calls
+        metrics.AddHttpClientInstrumentation();
+        
+        // Add console exporter for development
+        if (IsDevelopment)
+        {
+            metrics.AddConsoleExporter();
+        }
+
         // Add Azure Monitor exporter if connection string is provided
         if (!string.IsNullOrEmpty(azureMonitorConnectionString))
         {
