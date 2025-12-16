@@ -48,7 +48,7 @@ public class DotaMatch
         { 121, "Grimstroke" }, { 123, "Hoodwink" }, { 126, "Void Spirit" }, 
         { 128, "Snapfire" }, { 129, "Mars" }, { 131, "Ringmaster" }, 
         { 135, "Dawnbreaker" }, { 136, "Marci" }, { 137, "Primal Beast" }, 
-        { 138, "Muerta" }, { 145, "Kez" }
+        { 138, "Muerta" }, { 145, "Kez" }, {155, "Largo" },
     };
     [JsonPropertyName("match_id")]
     public long MatchId { get; set; }
